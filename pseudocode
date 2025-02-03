@@ -1,0 +1,189 @@
+# Customer Profiling
+GROUP BY Customer Name:
+    total_orders = COUNT(Order ID)
+    total_spent = SUM(Sales)
+    avg_discount_received = AVG(Discount)
+    avg_profit_contributed = AVG(Profit)
+    last_purchase = MAX(Order Date)
+    Recency = current_date - last_purchase
+    Frequency = total_orders
+    Monetary = total_spent
+
+SCORE customers based on Recency, Frequency, and Monetary
+SEGMENT customers into "High-Value", "Medium-Value", and "Low-Value"
+
+# Customer Loyalty & Retention Analysis
+GROUP BY Customer Name, Customer Number:
+    total_orders = COUNT(Order ID)
+    last_purchase = MAX(Order Date)
+
+IF total_orders == 1:
+    LABEL AS "One-Time Shopper"
+ELSE:
+    LABEL AS "Loyal Customer"
+
+IDENTIFY inactive customers WHERE last_purchase < (current_date - N months)
+
+# Customer Classification Based on Spending
+FOR each customer:
+    IF total_spent > HIGH_SPENDING_THRESHOLD:
+        LABEL AS "High-Value Customer"
+    ELSE IF total_spent BETWEEN MEDIUM_SPENDING_THRESHOLD:
+        LABEL AS "Medium-Value Customer"
+    ELSE:
+        LABEL AS "Low-Value Customer"
+
+# Spending Analysis by Age Group
+GROUP BY Age Range:
+    total_spent_per_age = SUM(Sales)
+    avg_order_value_per_age = AVG(Sales)
+    preferred_categories_per_age = MODE(Category)
+
+# Shopping Behavior Analysis
+# Market Basket Analysis
+FOR each Order ID:
+    CREATE product_pairs = COMBINE(Category, Sub Category)
+
+CALCULATE support, confidence, and lift FOR each product_pair:
+    IF confidence > CONFIDENCE_THRESHOLD:
+        LABEL AS "Frequently Bought Together"
+
+# Peak Shopping Analysis
+GROUP BY DAY_OF_WEEK(Order Date):
+    total_sales_per_day = SUM(Sales)
+
+GROUP BY HOUR(Order Time):
+    total_sales_per_hour = SUM(Sales)
+
+IDENTIFY peak shopping days WHERE total_sales_per_day > THRESHOLD
+IDENTIFY peak shopping hours WHERE total_sales_per_hour > THRESHOLD
+
+# Calculate Average Basket Size & Sales Trends
+GROUP BY Customer Name:
+    avg_basket_size = AVG(Sales)
+
+GROUP BY MONTH(Order Date):
+    total_sales = SUM(Sales)
+    total_profit = SUM(Profit)
+
+PLOT sales trend over months  
+IDENTIFY peak shopping seasons
+
+# Location-Based Analysis
+GROUP BY Store Location (City, State, Region):
+    total_sales_per_location = SUM(Sales)
+    total_profit_per_location = SUM(Profit)
+    avg_discount_per_location = AVG(Discount)
+
+# Identify Top-Performing Locations
+RANK locations BASED ON total_sales and total_profit
+
+# Regional Customer Behavior Insights
+FOR each store:
+    IF avg_discount > DISCOUNT_THRESHOLD:
+        LABEL AS "High Discount Dependency"
+    ELSE:
+        LABEL AS "Standard Pricing Store"
+
+# Identifying New Store Locations
+IF high_population AND no_existing_store AND high_sales_in_nearby_cities:
+    RECOMMEND new store location
+
+# Business Recommendations
+IF top categories have low profit:
+    RECOMMEND price adjustments or discount optimizations
+
+IF high-value customers show declining purchases:
+    RECOMMEND personalized promotions
+
+IF peak sales months identified:
+    PLAN inventory and marketing campaigns accordingly
+
+IF frequent product pairs identified:
+    SUGGEST bundling or cross-sell recommendations
+
+IF potential high-value locations found:
+    RECOMMEND store expansion
+
+Predict Churn Based on Recency and Frequency
+For each customer:
+    If Recency > CHURN_THRESHOLD:
+        Predict churn = High likelihood
+    Else:
+        Predict churn = Low likelihood
+// Dynamic price optimization and future sales predictions-
+1. Load and Preprocess Data
+   - data = load_csv(file_path)
+   - data = fill_missing_values(data)
+   - data = sort_by_date(data)
+
+2. Train ARIMA Model
+   - model = ARIMA(data['sales'], order=(p, d, q))
+   - model_fit = model.fit()
+   - future_demand = model_fit.forecast(steps=future_steps)
+
+3. Define Retail Environment
+   - class RetailEnv:
+     - Initialize:
+       - action_space = {+10%, +5%, No Change, -5%, -10%}
+       - observation_space = [current_demand, competitor_price, stock_level, loyalty_score, ARIMA_predicted_demand]
+     - reset():
+       - state = random_state()
+       - state[-1] = future_demand[0]
+       - return state
+     - step(action):
+       - price_change = action_to_price_change(action)
+       - demand_factor = random_variation()
+       - reward = calculate_reward(price_change, demand_factor)
+       - state = update_state(state, future_demand)
+       - done = False
+       - return state, reward, done
+
+4. Define DQN Agent
+   - class DQNAgent:
+     - Initialize:
+       - state_size, action_size
+       - memory_buffer, gamma, epsilon, learning_rate
+       - model = build_neural_network()
+     - build_neural_network():
+       - model = Sequential([
+           Dense(24, input_dim=state_size, activation='relu'),
+           Dense(24, activation='relu'),
+           Dense(action_size, activation='linear')
+         ])
+       - model.compile(loss='mse', optimizer=Adam(learning_rate))
+       - return model
+     - act(state):
+       - if random() <= epsilon:
+           return random_action()
+       - else:
+           return argmax(model.predict(state))
+     - train(state, action, reward, next_state, done):
+       - target = reward
+       - if not done:
+           target += gamma * max(model.predict(next_state))
+       - target_f = model.predict(state)
+       - target_f[action] = target
+       - model.fit(state, target_f)
+       - decay_epsilon()
+
+5. Train Hybrid Model
+   - data = load_clean_data(file_path)
+   - future_demand = train_arima(data)
+   - env = RetailEnv(future_demand)
+   - agent = DQNAgent(state_size=5, action_size=5)
+   - for episode in range(episodes):
+       - state = env.reset()
+       - done = False
+       - total_reward = 0
+       - while not done:
+           - action = agent.act(state)
+           - next_state, reward, done = env.step(action)
+           - agent.train(state, action, reward, next_state, done)
+           - state = next_state
+           - total_reward += reward
+       - if episode % 100 == 0:
+           - print(f"Episode {episode}, Total Reward: {total_reward}")
+
+6. Output
+   - print("Hybrid Model Training Completed!")
